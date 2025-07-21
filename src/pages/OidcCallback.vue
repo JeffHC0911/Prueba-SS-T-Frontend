@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Navbar />  <!-- Navbar sólo visible en Dashboard -->
+    <Navbar /> <!-- Navbar sólo visible en Dashboard -->
     <div class="dashboard">
       <h1>Panel de Control</h1>
       <p>Bienvenido, {{ userEmail }}!</p>
@@ -15,7 +15,10 @@
       </section>
 
       <section class="actions">
-        <button @click="goToCreateSurvey">Crear nueva encuesta</button>
+        <!-- ...tu contenido existente... -->
+        <button @click="showCreateModal = true">Crear nueva encuesta</button>
+
+        <ModalSurvey v-if="showCreateModal" @close="showCreateModal = false" @created="onSurveyCreated" />
         <button @click="goToResponses">Ver respuestas</button>
       </section>
     </div>
@@ -27,6 +30,10 @@ import Navbar from '../components/Navbar.vue'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import authService from '../services/authService'
+
+import ModalSurvey from '../components/ModalSurvey.vue'
+
+const showCreateModal = ref(false)
 
 const router = useRouter()
 const userEmail = ref('')
@@ -45,6 +52,13 @@ function goToCreateSurvey() {
 function goToResponses() {
   router.push('/responses')
 }
+
+function onSurveyCreated() {
+  showCreateModal.value = false
+  // Recarga las encuestas, por ejemplo llamando una función que las trae
+}
+
+
 </script>
 
 <style scoped>
@@ -52,10 +66,12 @@ function goToResponses() {
   padding: 2em;
   font-family: Arial, sans-serif;
 }
+
 .stats ul {
   list-style-type: disc;
   margin-left: 1.5em;
 }
+
 .actions button {
   margin-right: 1em;
   padding: 0.6em 1.2em;
@@ -65,6 +81,7 @@ function goToResponses() {
   color: white;
   cursor: pointer;
 }
+
 .actions button:hover {
   background-color: #3ddad7;
 }
