@@ -9,8 +9,6 @@
         <h2>Estadísticas rápidas</h2>
         <ul>
           <li>Encuestas activas: {{ surveys.length }}</li>
-          <li>Usuarios registrados: 120</li>
-          <li>Respuestas pendientes: 32</li>
         </ul>
       </section>
 
@@ -33,13 +31,14 @@
 
 
         <div v-if="surveys.length" class="surveys-grid">
-          <SurveyCard v-for="survey in surveys" :key="survey.survey_id" :survey="survey" @edit="handleEditSurvey"
-            @delete="handleDeleteSurvey" @view="handleViewSurvey" />
+          <SurveyCard v-for="survey in surveys" :key="survey.survey_id" :survey="survey" :userRole="userRole"
+            @edit="handleEditSurvey" @delete="handleDeleteSurvey" @view="handleViewSurvey"
+            @publish="handlePublishSurvey" />
         </div>
       </section>
 
       <section class="actions">
-        <button v-if="userRole === 'admin'" @click="goToResponses">Ver respuestas</button>
+        <button disabled v-if="userRole === 'admin'" @click="goToResponses">Ver respuestas</button>
       </section>
     </div>
 
@@ -52,7 +51,7 @@ import Navbar from '../components/Navbar.vue'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import authService from '../services/authService'
-import { listSurveys, type Survey } from '../services/surveyService'
+import { listSurveys, type Survey, updateSurveyStatus } from '../services/surveyService'
 import SurveyCard from '../components/SurveyCard.vue'
 import ModalSurvey from '../components/ModalSurvey.vue'
 
@@ -69,6 +68,15 @@ async function loadUser() {
   const user = await authService.getUser()
   userEmail.value = String(user?.email ?? 'Invitado')
   userRole.value = String(user?.role ?? 'cliente')
+}
+
+async function handlePublishSurvey(survey: Survey) {
+  try {
+    await updateSurveyStatus(survey.survey_id, 'publicado')
+    await fetchUserSurveys()
+  } catch (e: any) {
+    console.error('Error publicando la encuesta:', e.message)
+  }
 }
 
 async function fetchUserSurveys() {
@@ -99,23 +107,19 @@ function goToResponses() {
 
 function onSurveyCreated() {
   showCreateModal.value = false
-  fetchUserSurveys() // Recarga para mostrar la nueva encuesta añadida
+  fetchUserSurveys()
 }
 
-// Placeholder funciones para eventos de las cards (a implementar)
 function handleEditSurvey(survey: Survey) {
   console.log('Editar encuesta:', survey.survey_id)
-  // Implementa edición o redirección aquí
 }
 
 function handleDeleteSurvey(survey: Survey) {
   console.log('Eliminar encuesta:', survey.survey_id)
-  // Implementa confirmación y eliminación aquí
 }
 
 function handleViewSurvey(survey: Survey) {
   console.log('Ver encuesta:', survey.survey_id)
-  // Implementa redirección a detalles o resultados
 }
 </script>
 
@@ -168,7 +172,7 @@ function handleViewSurvey(survey: Survey) {
 
 .btn-create-survey {
   padding: 0.7em 1.2em;
-  background-color: #3ddad7;
+  background-color: #4363bd;
   border: none;
   border-radius: 6px;
   color: white;
@@ -209,5 +213,12 @@ function handleViewSurvey(survey: Survey) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5em;
+}
+
+button:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 </style>

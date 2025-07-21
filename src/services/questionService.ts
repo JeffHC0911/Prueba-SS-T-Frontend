@@ -6,6 +6,7 @@ export interface CreateQuestionPayload {
   text: string
   type: string
   options?: string[]
+  required: boolean
 }
 
 export async function createQuestion(data: CreateQuestionPayload) {

@@ -7,13 +7,19 @@
       <small>ID: {{ props.survey.survey_id }}</small>
     </div>
     <div class="card-actions">
-      <button @click="$emit('edit', props.survey)" class="btn btn-edit">Editar</button>
-      <button @click="$emit('delete', props.survey)" class="btn btn-delete">Eliminar</button>
-      <button @click="$emit('view', props.survey)" class="btn btn-view">Ver</button>
+      <button disabled @click="$emit('delete', props.survey)" class="btn btn-delete">Eliminar</button>
+      <button disabled @click="$emit('view', props.survey)" class="btn btn-view">Ver</button>
+      <button
+        disabled
+        v-if="userRole === 'admin' && props.survey.status !== 'publicado'"
+        @click="$emit('publish', props.survey)"
+        class="btn btn-publish"
+      >
+        Publicar
+      </button>
     </div>
   </div>
 </template>
-
 
 <script setup lang="ts">
 import { defineProps } from 'vue'
@@ -23,9 +29,13 @@ interface Survey {
   description: string
   created_at: string
   survey_id: string
+  status?: string
 }
 
-const props = defineProps<{ survey: Survey }>()
+const props = defineProps<{
+  survey: Survey
+  userRole: string
+}>()
 
 function formatDate(dateStr: string) {
   const date = new Date(dateStr)
@@ -96,4 +106,21 @@ function formatDate(dateStr: string) {
 .btn-view:hover {
   background-color: #0b7dda;
 }
+
+.btn-publish {
+  background-color: #ff9800;
+  color: white;
+}
+.btn-publish:hover {
+  background-color: #e68900;
+}
+
+.btn:disabled {
+  background-color: #ccc !important;
+  color: #666 !important;
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
 </style>

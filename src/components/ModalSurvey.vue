@@ -4,34 +4,22 @@
       <h3 class="modal-title">Crear Nueva Encuesta</h3>
       <form @submit.prevent="onSubmit" class="form">
         <label for="title" class="form-label">Título *</label>
-        <input
-          id="title"
-          v-model="title"
-          required
-          placeholder="Título de la encuesta"
-          class="form-input"
-          :disabled="loading"
-        />
+        <input id="title" v-model="title" required placeholder="Título de la encuesta" class="form-input"
+          :disabled="loading" />
 
         <label for="description" class="form-label">Descripción</label>
-        <textarea
-          id="description"
-          v-model="description"
-          placeholder="Descripción opcional"
-          class="form-textarea"
-          :disabled="loading"
-        ></textarea>
+        <textarea id="description" v-model="description" placeholder="Descripción opcional" class="form-textarea"
+          :disabled="loading"></textarea>
 
         <h4 class="section-title">Preguntas</h4>
         <div class="questions-container" v-if="questions.length">
           <div v-for="(q, index) in questions" :key="q.question_id" class="question-item">
-            <input
-              v-model="q.text"
-              placeholder="Texto de la pregunta"
-              required
-              class="form-input question-text"
-              :disabled="loading"
-            />
+            <input v-model="q.text" placeholder="Texto de la pregunta" required class="form-input question-text"
+              :disabled="loading" />
+            <label class="form-label small-label">
+              <input type="checkbox" v-model="q.required" :disabled="loading" />
+              Obligatoria
+            </label>
             <select v-model="q.type" class="form-select" :disabled="loading">
               <option value="text">Texto libre</option>
               <option value="choice">Opción única</option>
@@ -39,13 +27,8 @@
             </select>
             <div v-if="q.type === 'choice' || q.type === 'multiple-choice'" class="options-group">
               <label class="form-label small-label">Opciones (separadas por coma):</label>
-              <input
-                v-model="q.optionsString"
-                @input="updateOptions(index)"
-                placeholder="Ej: Rojo, Azul, Verde"
-                class="form-input"
-                :disabled="loading"
-              />
+              <input v-model="q.optionsString" @input="updateOptions(index)" placeholder="Ej: Rojo, Azul, Verde"
+                class="form-input" :disabled="loading" />
             </div>
             <button type="button" class="btn btn-danger" @click="removeQuestion(index)" :disabled="loading">
               Eliminar
@@ -91,6 +74,7 @@ interface Question {
   type: string
   options: string[]
   optionsString: string
+  required: boolean
 }
 
 const questions = ref<Question[]>([])
@@ -101,7 +85,8 @@ function addQuestion() {
     text: '',
     type: 'text',
     options: [],
-    optionsString: ''
+    optionsString: '',
+    required: false
   })
 }
 
@@ -145,7 +130,8 @@ async function onSubmit() {
         question_id: q.question_id,
         text: q.text,
         type: q.type,
-        options: q.options
+        options: q.options,
+        required: q.required
       })
     }
 
@@ -184,6 +170,7 @@ async function onSubmit() {
   box-shadow: 0 8px 24px rgba(100, 87, 250, 0.2);
   display: flex;
   flex-direction: column;
+  font-family: Arial, sans-serif;
 }
 
 /* Title */
@@ -202,6 +189,7 @@ async function onSubmit() {
   color: #555;
   display: block;
 }
+
 .small-label {
   font-size: 0.8rem;
   color: #888;
@@ -219,6 +207,7 @@ async function onSubmit() {
   font-size: 1rem;
   transition: border-color 0.2s;
 }
+
 .form-input:focus,
 .form-select:focus,
 .form-textarea:focus {
@@ -279,6 +268,7 @@ async function onSubmit() {
   background-color: #6457fa;
   color: white;
 }
+
 .btn-primary:hover:not(:disabled) {
   background-color: #4e3acf;
 }
@@ -287,6 +277,7 @@ async function onSubmit() {
   background-color: #ff5e57;
   color: white;
 }
+
 .btn-danger:hover:not(:disabled) {
   background-color: #e34a41;
 }
@@ -295,6 +286,7 @@ async function onSubmit() {
   background-color: #ccc;
   color: #444;
 }
+
 .btn-secondary:hover:not(:disabled) {
   background-color: #aaa;
 }
@@ -308,6 +300,7 @@ async function onSubmit() {
   background-color: #888;
   color: white;
 }
+
 .btn-cancel:hover:not(:disabled) {
   background-color: #666;
 }

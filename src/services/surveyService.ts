@@ -42,6 +42,20 @@ export interface Survey {
   // agrega otros campos si tienes
 }
 
+export async function updateSurveyStatus(survey_id: string, status: string) {
+  const response = await fetch(`/api/surveys/${survey_id}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  })
+
+  if (!response.ok) {
+    throw new Error('Error al actualizar el estado de la encuesta')
+  }
+
+  return response.json()
+}
+
 
 
 export async function createSurvey(data: {
@@ -67,6 +81,7 @@ export async function createSurvey(data: {
     created_at: now,
     updated_at: now
   }
+  
   
   
 
