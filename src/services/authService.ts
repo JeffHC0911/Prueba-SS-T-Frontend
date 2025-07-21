@@ -30,18 +30,19 @@ async function getUser() {
     const session = await fetchAuthSession()
 
     const payload = session.tokens?.idToken?.payload
-    
+
 
     return {
-      email: payload?.email ?? user.username ?? '',
-      username: user.username,
-      role: payload?.['custom:role'] ?? 'cliente'
+      email: String(payload?.email ?? user.username ?? ''),
+      username: String(user.username ?? ''),
+      role: String(payload?.['custom:role'] ?? 'cliente')
     }
+
   } catch {
     return null
   }
-  
-  
+
+
 }
 
 
