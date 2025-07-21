@@ -1,4 +1,4 @@
-import { signIn, signOut, getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
+import { signIn, signUp, signOut, getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 
 
 async function login(email: string, password: string) {
@@ -10,17 +10,41 @@ async function login(email: string, password: string) {
   };
 }
 
+async function register(email: string, password: string, role: string) {
+  const res = await signUp({
+    username: email,
+    password,
+    options: {
+      userAttributes: {
+        email,
+        'custom:role': role,
+      },
+    },
+  });
+  return res;
+}
+
 async function getUser() {
   try {
-    const user = await getCurrentUser();
+    const user = await getCurrentUser()
+    const session = await fetchAuthSession()
+
+    const payload = session.tokens?.idToken?.payload
+    
+
     return {
-      email: user.signInDetails?.loginId ?? user.username ?? '',
+      email: payload?.email ?? user.username ?? '',
       username: user.username,
-    };
+      role: payload?.['custom:role'] ?? 'cliente'
+    }
   } catch {
-    return null;
+    return null
   }
+  
+  
 }
+
+
 
 async function getToken() {
   const session = await fetchAuthSession()
@@ -34,4 +58,4 @@ async function logout() {
   await signOut();
 }
 
-export default { login, getUser, logout, getToken };
+export default { login, register, getUser, logout, getToken };

@@ -38,6 +38,7 @@ export interface Survey {
   admin_id: string
   created_at: string
   updated_at: string
+  status: 'borrador' | 'publicado' | 'archivado'
   // agrega otros campos si tienes
 }
 

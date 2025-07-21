@@ -2,7 +2,9 @@
   <div class="login-bg">
     <div class="login-card">
       <h2>
-        <svg width="24" height="24" style="position:relative;top:5px;fill:#6457FA"><use href="#key" /></svg>
+        <svg width="24" height="24" style="position:relative;top:5px;fill:#6457FA">
+          <use href="#key" />
+        </svg>
         Ingresar
       </h2>
       <form @submit.prevent="onLogin">
@@ -14,6 +16,12 @@
         </button>
         <div v-if="error" class="login-error">{{ error }}</div>
       </form>
+      <!-- Dentro de <form> o debajo -->
+      <p class="register-link">
+        ¿No tienes cuenta?
+        <a @click.prevent="router.push('/register')" href="#">Regístrate aquí</a>
+      </p>
+
     </div>
     <!-- SVG sprite icono clave, puedes poner más íconos si deseas -->
     <svg style="display:none;">
@@ -36,7 +44,7 @@ const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const error = ref('')
-const user = ref<{email: string; username?: string}|null>(null)
+const user = ref<{ email: string; username?: string } | null>(null)
 
 async function fetchCurrentUser() {
   const u = await authService.getUser()
@@ -62,12 +70,6 @@ const onLogin = async () => {
     loading.value = false
   }
 }
-const onLogout = async () => {
-  await authService.logout()
-  user.value = null
-  isSignedIn.value = false
-  router.push('/')  // Opcional: redirigir a login o ruta pública después de salir
-}
 </script>
 
 
@@ -80,20 +82,30 @@ const onLogout = async () => {
   justify-content: center;
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
 }
+
 .login-card {
   background: #fff;
   border-radius: 14px;
-  box-shadow: 0 6px 32px 0 rgba(60,60,130,.08), 0 1.5px 8px 0 rgba(60,60,130,0.09);
+  box-shadow: 0 6px 32px 0 rgba(60, 60, 130, .08), 0 1.5px 8px 0 rgba(60, 60, 130, 0.09);
   padding: 2.2em 2.2em 2em 2.2em;
   min-width: 320px;
   max-width: 94vw;
-  animation: popin .5s cubic-bezier(.36,1.62,.46,.87) 1;
+  animation: popin .5s cubic-bezier(.36, 1.62, .46, .87) 1;
   transition: box-shadow 0.2s;
 }
+
 @keyframes popin {
-  0%   { transform: scale(.95) translateY(40px); opacity: 0;}
-  100% { transform: scale(1) translateY(0);     opacity: 1;}
+  0% {
+    transform: scale(.95) translateY(40px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
 }
+
 .login-card h2 {
   text-align: center;
   margin-bottom: 1.7em;
@@ -101,11 +113,13 @@ const onLogout = async () => {
   letter-spacing: -.3px;
   color: #6457fa;
 }
+
 form {
   display: flex;
   flex-direction: column;
   gap: 1.1em;
 }
+
 input {
   padding: .82em 1em;
   border: 1.2px solid #e6e6ec;
@@ -114,13 +128,16 @@ input {
   transition: border .15s, box-shadow .15s;
   background: #f8f8fd;
 }
+
 input:focus {
   border-color: #6457fa;
   background: #f5f7ff;
   outline: none;
   box-shadow: 0 1px 6px 0 #6457fa23;
 }
-button[type="submit"], .logout-btn {
+
+button[type="submit"],
+.logout-btn {
   margin-top: .2em;
   font-size: 1.01em;
   font-weight: 600;
@@ -134,14 +151,18 @@ button[type="submit"], .logout-btn {
   box-shadow: 0 1px 4px 0 #3ddad70d;
   position: relative;
 }
+
 button[disabled] {
   opacity: .7;
   pointer-events: none;
 }
-button:hover:not([disabled]), .logout-btn:hover {
+
+button:hover:not([disabled]),
+.logout-btn:hover {
   background: linear-gradient(90deg, #3ddad7 0%, #7657fa 85%);
   box-shadow: 0 2px 10px 0 #6457fa18;
 }
+
 .login-error {
   margin-top: .7em;
   color: #f24c4c;
@@ -154,13 +175,29 @@ button:hover:not([disabled]), .logout-btn:hover {
   border: 1px solid #ffd1d1;
   animation: shake 0.35s;
 }
+
 @keyframes shake {
-  0% { transform: translateX(0); }
-  22% { transform: translateX(-7px);}
-  50% { transform: translateX(4px);}
-  80% { transform: translateX(-2px);}
-  100%{ transform: translateX(0);}
+  0% {
+    transform: translateX(0);
+  }
+
+  22% {
+    transform: translateX(-7px);
+  }
+
+  50% {
+    transform: translateX(4px);
+  }
+
+  80% {
+    transform: translateX(-2px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
 }
+
 .spinner {
   display: inline-block;
   width: 17px;
@@ -171,16 +208,24 @@ button:hover:not([disabled]), .logout-btn:hover {
   animation: spin 1s linear infinite;
   vertical-align: middle;
 }
+
 @keyframes spin {
-  0% { transform: rotate(0deg);}
-  100%{ transform: rotate(360deg);}
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
+
 .user-info {
   display: flex;
   align-items: center;
   flex-direction: column;
   margin-bottom: 1.1em;
 }
+
 .user-icon {
   width: 54px;
   height: 54px;
@@ -193,8 +238,9 @@ button:hover:not([disabled]), .logout-btn:hover {
   text-align: center;
   margin-bottom: .8em;
   box-shadow: 0 1px 6px 0 #6457fa23;
-  letter-spacing:0.02em;
+  letter-spacing: 0.02em;
 }
+
 .profile {
   margin-top: 1.2em;
   background: #f6f6fc;
@@ -205,7 +251,23 @@ button:hover:not([disabled]), .logout-btn:hover {
   color: #222;
   border: 1px solid #eee;
 }
+
+.register-link {
+  margin-top: 1em;
+  text-align: center;
+  font-size: 0.95em;
+}
+.register-link a {
+  color: #6457fa;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 @media (max-width: 480px) {
-  .login-card { padding: 1.2em .5em; min-width: 95vw;}
+  .login-card {
+    padding: 1.2em .5em;
+    min-width: 95vw;
+  }
 }
 </style>

@@ -5,7 +5,7 @@
       <h1>Panel de Control</h1>
       <p>Bienvenido, {{ userEmail }}!</p>
 
-      <section class="stats">
+      <section v-if="userRole === 'admin'" class="stats">
         <h2>Estadísticas rápidas</h2>
         <ul>
           <li>Encuestas activas: {{ surveys.length }}</li>
@@ -17,38 +17,33 @@
       <!-- Nueva sección para mostrar encuestas -->
       <section class="survey-management">
         <div class="header-with-button">
-          <h2>Mis Encuestas</h2>
-          <button @click="showCreateModal = true" class="btn-create-survey">Crear nueva encuesta</button>
+          <h2>{{ userRole === 'admin' ? 'Mis Encuestas' : 'Encuestas por responder' }}</h2> <button
+            v-if="userRole === 'admin'" @click="showCreateModal = true" class="btn-create-survey">Crear nueva
+            encuesta</button>
         </div>
 
         <div v-if="loadingSurveys" class="status-message loading-message">Cargando encuestas...</div>
         <div v-if="surveyLoadError" class="status-message error-message">{{ surveyLoadError }}</div>
         <div v-if="!loadingSurveys && !surveyLoadError && surveys.length === 0" class="status-message info-message">
-          Aún no tienes encuestas creadas.
+          {{ userRole === 'admin'
+            ? 'Aún no tienes encuestas creadas.'
+            : 'No hay encuestas disponibles para responder.'
+          }}
         </div>
 
+
         <div v-if="surveys.length" class="surveys-grid">
-          <SurveyCard 
-            v-for="survey in surveys" 
-            :key="survey.survey_id" 
-            :survey="survey"
-            @edit="handleEditSurvey"
-            @delete="handleDeleteSurvey"
-            @view="handleViewSurvey"
-          />
+          <SurveyCard v-for="survey in surveys" :key="survey.survey_id" :survey="survey" @edit="handleEditSurvey"
+            @delete="handleDeleteSurvey" @view="handleViewSurvey" />
         </div>
       </section>
 
       <section class="actions">
-        <button @click="goToResponses">Ver respuestas</button>
+        <button v-if="userRole === 'admin'" @click="goToResponses">Ver respuestas</button>
       </section>
     </div>
 
-    <ModalSurvey 
-      v-if="showCreateModal" 
-      @close="showCreateModal = false" 
-      @created="onSurveyCreated" 
-    />
+    <ModalSurvey v-if="showCreateModal" @close="showCreateModal = false" @created="onSurveyCreated" />
   </div>
 </template>
 
@@ -68,22 +63,30 @@ const surveys = ref<Survey[]>([])
 const loadingSurveys = ref(false)
 const surveyLoadError = ref<string | null>(null)
 
+const userRole = ref('cliente') // fallback
+
 async function loadUser() {
   const user = await authService.getUser()
-  userEmail.value = user?.email || 'Usuario'
+  userEmail.value = String(user?.email ?? 'Invitado')
+  userRole.value = String(user?.role ?? 'cliente')
 }
 
 async function fetchUserSurveys() {
   loadingSurveys.value = true
   surveyLoadError.value = null
+
   try {
-    surveys.value = await listSurveys()
+    const allSurveys = await listSurveys()
+    surveys.value = userRole.value === 'admin'
+      ? allSurveys
+      : allSurveys.filter((s: { status: string }) => s.status === 'publicado')
   } catch (e: any) {
     surveyLoadError.value = e.message || 'Error al cargar las encuestas.'
   } finally {
     loadingSurveys.value = false
   }
 }
+
 
 onMounted(() => {
   loadUser()
@@ -147,7 +150,7 @@ function handleViewSurvey(survey: Survey) {
   padding: 1.5em;
   background-color: #f9f9f9;
   border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .header-with-button {
