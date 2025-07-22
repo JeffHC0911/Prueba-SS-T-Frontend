@@ -7,7 +7,7 @@
       <small>ID: {{ props.survey.survey_id }}</small>
     </div>
     <div class="card-actions">
-      <button disabled @click="$emit('delete', props.survey)" class="btn btn-delete">Eliminar</button>
+      <button v-if="userRole === 'admin'" @click="$emit('delete', props.survey)" class="btn btn-delete">Eliminar</button>
       <button disabled @click="$emit('view', props.survey)" class="btn btn-view">Ver</button>
       <button
         v-if="userRole === 'admin' && props.survey.status !== 'publicado'"

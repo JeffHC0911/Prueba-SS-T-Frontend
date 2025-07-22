@@ -106,3 +106,23 @@ const response = await fetch('https://mb6bhivfcb.execute-api.us-east-1.amazonaws
 
   return await response.json()
 }
+
+export async function deleteSurvey(survey_id: string) {
+  const token = await authService.getToken()
+
+  const response = await fetch('https://mb6bhivfcb.execute-api.us-east-1.amazonaws.com/deleteSurvey', {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ survey_id })
+  })
+
+  if (!response.ok) {
+    const errMsg = await response.text()
+    throw new Error(`Error al eliminar encuesta: ${errMsg}`)
+  }
+
+  return response.json()
+}

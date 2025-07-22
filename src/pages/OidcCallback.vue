@@ -71,7 +71,7 @@ import Navbar from '../components/Navbar.vue'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import authService from '../services/authService'
-import { listSurveys, type Survey, updateSurveyStatus } from '../services/surveyService'
+import { deleteSurvey, listSurveys, type Survey, updateSurveyStatus } from '../services/surveyService'
 import SurveyCard from '../components/SurveyCard.vue'
 import ModalSurvey from '../components/ModalSurvey.vue'
 
@@ -87,8 +87,9 @@ const selectedSurvey = ref<Survey | null>(null)
 const publishStartDate = ref('')
 const publishEndDate = ref('')
 
-
 const userRole = ref('cliente') // fallback
+
+const isDeleting = ref(false)
 
 
 async function loadUser() {
@@ -163,8 +164,24 @@ function handleEditSurvey(survey: Survey) {
   console.log('Editar encuesta:', survey.survey_id)
 }
 
-function handleDeleteSurvey(survey: Survey) {
-  console.log('Eliminar encuesta:', survey.survey_id)
+async function handleDeleteSurvey(survey: Survey) {
+  if (!confirm(`¿Seguro que deseas eliminar la encuesta "${survey.title}"?`)) {
+    return
+  }
+  try {
+    isDeleting.value = true
+    await deleteSurvey(survey.survey_id)
+    alert('Encuesta eliminada correctamente.')
+
+    // Actualiza localmente la lista eliminando la encuesta
+    surveys.value = surveys.value.filter(s => s.survey_id !== survey.survey_id)
+
+  } catch (error) {
+    console.error('Error eliminando encuesta:', error)
+    alert('Hubo un problema al eliminar la encuesta.')
+  } finally {
+    isDeleting.value = false
+  }
 }
 
 function handleViewSurvey(survey: Survey) {
