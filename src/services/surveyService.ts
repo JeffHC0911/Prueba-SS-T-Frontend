@@ -40,6 +40,8 @@ export interface Survey {
   updated_at: string
   status: 'borrador' | 'publicado' | 'archivado'
   questions?: string[]
+  start_date?: string
+  end_date?: string
 }
 
 export async function getSurveyQuestions(surveyId: string): Promise<any[]> {

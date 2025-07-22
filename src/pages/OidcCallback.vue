@@ -102,6 +102,25 @@ const showRespondModal = ref(false)
 
 async function handleRespondSurvey(survey: Survey) {
   try {
+    const now = new Date()
+
+    const start = survey.start_date ? new Date(survey.start_date) : null
+    const end = survey.end_date ? new Date(survey.end_date) : null
+
+    console.log(`Fecha de inicio: ${start}, Fecha de cierre: ${end}, Fecha actual: ${now}`);
+    console.log(survey.start_date, survey.end_date);
+    
+    
+
+  if (start && now < start) {
+    alert('La encuesta aún no está disponible.')
+    return
+  }
+
+  if (end && now > end) {
+    alert('La encuesta ya ha sido cerrada.')
+    return
+  }
     // Obtiene preguntas para esta encuesta
     const questionsData = await getSurveyQuestions(survey.survey_id)
     
@@ -120,17 +139,27 @@ async function handleRespondSurvey(survey: Survey) {
   }
 }
 
-
-
 async function loadUser() {
   const user = await authService.getUser()
   userEmail.value = String(user?.email ?? 'Invitado')
   userRole.value = String(user?.role ?? 'cliente')
 }
 
+function getLocalISOString() {
+  const now = new Date()
+  const offset = now.getTimezoneOffset() * 60000 // diferencia en milisegundos
+  const localISO = new Date(now.getTime() - offset).toISOString().slice(0, 16)
+  return localISO
+}
+
+function toUTCISOString(datetimeLocal: string): string {
+  const localDate = new Date(datetimeLocal)
+  return localDate.toISOString()
+}
+
 function handlePublishSurvey(survey: Survey) {
   selectedSurvey.value = survey
-  publishStartDate.value = new Date().toISOString().slice(0, 16)
+  publishStartDate.value = getLocalISOString()
   publishEndDate.value = ''
   showPublishModal.value = true
 }
@@ -138,11 +167,15 @@ function handlePublishSurvey(survey: Survey) {
 async function confirmPublish() {
   if (!selectedSurvey.value) return
   try {
+
+    const publishStartUTC = toUTCISOString(publishStartDate.value)
+    const publishEndUTC = publishEndDate.value ? toUTCISOString(publishEndDate.value) : ''
+
     await updateSurveyStatus(
       selectedSurvey.value.survey_id,
       'publicado',
-      publishStartDate.value,
-      publishEndDate.value
+      publishStartUTC,
+      publishEndUTC
     )
     await fetchUserSurveys()
   } catch (e: any) {
