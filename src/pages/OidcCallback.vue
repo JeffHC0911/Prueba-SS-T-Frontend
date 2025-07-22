@@ -43,6 +43,26 @@
     </div>
 
     <ModalSurvey v-if="showCreateModal" @close="showCreateModal = false" @created="onSurveyCreated" />
+
+    <div v-if="showPublishModal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>Publicar encuesta</h3>
+    <label>
+      Fecha de inicio:
+      <input type="datetime-local" v-model="publishStartDate" />
+    </label>
+    <label>
+      Fecha de cierre:
+      <input type="datetime-local" v-model="publishEndDate" />
+    </label>
+    <div class="modal-actions">
+      <button @click="confirmPublish">Publicar</button>
+      <button @click="cancelPublish">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+
   </div>
 </template>
 
@@ -62,7 +82,14 @@ const surveys = ref<Survey[]>([])
 const loadingSurveys = ref(false)
 const surveyLoadError = ref<string | null>(null)
 
+const showPublishModal = ref(false)
+const selectedSurvey = ref<Survey | null>(null)
+const publishStartDate = ref('')
+const publishEndDate = ref('')
+
+
 const userRole = ref('cliente') // fallback
+
 
 async function loadUser() {
   const user = await authService.getUser()
@@ -70,14 +97,36 @@ async function loadUser() {
   userRole.value = String(user?.role ?? 'cliente')
 }
 
-async function handlePublishSurvey(survey: Survey) {
+function handlePublishSurvey(survey: Survey) {
+  selectedSurvey.value = survey
+  publishStartDate.value = new Date().toISOString().slice(0, 16)
+  publishEndDate.value = ''
+  showPublishModal.value = true
+}
+
+async function confirmPublish() {
+  if (!selectedSurvey.value) return
   try {
-    await updateSurveyStatus(survey.survey_id, 'publicado')
+    await updateSurveyStatus(
+      selectedSurvey.value.survey_id,
+      'publicado',
+      publishStartDate.value,
+      publishEndDate.value
+    )
     await fetchUserSurveys()
   } catch (e: any) {
     console.error('Error publicando la encuesta:', e.message)
+  } finally {
+    showPublishModal.value = false
+    selectedSurvey.value = null
   }
 }
+
+function cancelPublish() {
+  showPublishModal.value = false
+  selectedSurvey.value = null
+}
+
 
 async function fetchUserSurveys() {
   loadingSurveys.value = true
@@ -221,4 +270,99 @@ button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: #fff;
+  padding: 2rem 2.5rem;
+  border-radius: 10px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #333;
+  font-weight: 600;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 1.2rem;
+  color: #555;
+  font-size: 1rem;
+}
+
+.modal-content input[type="datetime-local"] {
+  margin-top: 0.3rem;
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.modal-content input[type="datetime-local"]:focus {
+  outline: none;
+  border-color: #3b82f6; /* Azul vivo */
+  box-shadow: 0 0 4px rgba(59,130,246,0.5);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+button {
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.6rem 1.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  color: white;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+}
+
+.btn-primary:hover {
+  background-color: #2563eb;
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.6);
+}
+
+.btn-secondary {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.btn-secondary:hover {
+  background-color: #d1d5db;
+  color: #1f2937;
+}
+
 </style>

@@ -39,14 +39,18 @@ export interface Survey {
   created_at: string
   updated_at: string
   status: 'borrador' | 'publicado' | 'archivado'
-  // agrega otros campos si tienes
 }
 
-export async function updateSurveyStatus(survey_id: string, status: string) {
-  const response = await fetch(`/api/surveys/${survey_id}/status`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status })
+export async function updateSurveyStatus(survey_id: string, status: string, start_date?: string, end_date?: string) {
+
+const token = await authService.getToken()
+
+  const response = await fetch('https://mb6bhivfcb.execute-api.us-east-1.amazonaws.com/updateSurvey', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+     },
+    body: JSON.stringify({ survey_id, status, start_date, end_date  })
   })
 
   if (!response.ok) {
@@ -55,7 +59,6 @@ export async function updateSurveyStatus(survey_id: string, status: string) {
 
   return response.json()
 }
-
 
 
 export async function createSurvey(data: {
@@ -81,7 +84,6 @@ export async function createSurvey(data: {
     created_at: now,
     updated_at: now
   }
-  
   
   
 

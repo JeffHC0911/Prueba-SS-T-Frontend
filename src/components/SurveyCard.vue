@@ -10,7 +10,6 @@
       <button disabled @click="$emit('delete', props.survey)" class="btn btn-delete">Eliminar</button>
       <button disabled @click="$emit('view', props.survey)" class="btn btn-view">Ver</button>
       <button
-        disabled
         v-if="userRole === 'admin' && props.survey.status !== 'publicado'"
         @click="$emit('publish', props.survey)"
         class="btn btn-publish"
