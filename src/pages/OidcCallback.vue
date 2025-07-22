@@ -33,7 +33,7 @@
         <div v-if="surveys.length" class="surveys-grid">
           <SurveyCard v-for="survey in surveys" :key="survey.survey_id" :survey="survey" :userRole="userRole"
             @edit="handleEditSurvey" @delete="handleDeleteSurvey" @view="handleViewSurvey"
-            @publish="handlePublishSurvey" />
+            @publish="handlePublishSurvey" @respond="handleRespondSurvey" />
         </div>
       </section>
 
@@ -62,6 +62,12 @@
   </div>
 </div>
 
+<ModalResponse
+  v-if="showRespondModal && selectedSurvey"
+  :survey="selectedSurvey"
+  :respondent-id="userEmail"
+  @close="showRespondModal = false"
+/>
 
   </div>
 </template>
@@ -71,9 +77,10 @@ import Navbar from '../components/Navbar.vue'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import authService from '../services/authService'
-import { deleteSurvey, listSurveys, type Survey, updateSurveyStatus } from '../services/surveyService'
+import { deleteSurvey, listSurveys, type Survey, updateSurveyStatus, getSurveyQuestions } from '../services/surveyService'
 import SurveyCard from '../components/SurveyCard.vue'
 import ModalSurvey from '../components/ModalSurvey.vue'
+import ModalResponse from '../components/ModalResponse.vue'
 
 const showCreateModal = ref(false)
 const router = useRouter()
@@ -90,6 +97,29 @@ const publishEndDate = ref('')
 const userRole = ref('cliente') // fallback
 
 const isDeleting = ref(false)
+
+const showRespondModal = ref(false)
+
+async function handleRespondSurvey(survey: Survey) {
+  try {
+    // Obtiene preguntas para esta encuesta
+    const questionsData = await getSurveyQuestions(survey.survey_id)
+    
+    // Mapea las preguntas si es necesario, por ejemplo, asumiendo que cada item tiene campo 'question' o similar
+    const questions = questionsData.map(item => item.question || item.text || item.title || 'Pregunta sin texto')
+
+    // Asigna el survey combinado con las preguntas
+    selectedSurvey.value = { ...survey, questions }
+
+    // Abre el modal
+    showRespondModal.value = true
+
+  } catch (error) {
+    console.error('Error cargando preguntas:', error)
+    alert('No se pudieron cargar las preguntas. Intente nuevamente.')
+  }
+}
+
 
 
 async function loadUser() {

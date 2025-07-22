@@ -39,7 +39,25 @@ export interface Survey {
   created_at: string
   updated_at: string
   status: 'borrador' | 'publicado' | 'archivado'
+  questions?: string[]
 }
+
+export async function getSurveyQuestions(surveyId: string): Promise<any[]> {
+  const token = await authService.getToken()
+  const response = await fetch(`https://mb6bhivfcb.execute-api.us-east-1.amazonaws.com/getQuestions?survey_id=${surveyId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error('Error fetching survey questions')
+  }
+
+  return response.json()
+}
+
 
 export async function updateSurveyStatus(survey_id: string, status: string, start_date?: string, end_date?: string) {
 
@@ -126,3 +144,49 @@ export async function deleteSurvey(survey_id: string) {
 
   return response.json()
 }
+
+export async function submitSurveyResponse(
+  survey_id: string,
+  answers: any,
+  respondent_id?: string,
+  metadata?: any
+) {
+
+  const token = await authService.getToken()
+  const response = await fetch('https://mb6bhivfcb.execute-api.us-east-1.amazonaws.com/createResponses', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+     },
+    body: JSON.stringify({
+      survey_id,
+      respondent_id,
+      answers,
+      metadata
+    })
+  })
+
+  if (!response.ok) {
+    throw new Error('Error al enviar la respuesta')
+  }
+
+  return response.json()
+}
+
+export async function getSurveyById(id: string) {
+  const token = await authService.getToken()
+  const response = await fetch(`https://mb6bhivfcb.execute-api.us-east-1.amazonaws.com/getSurveyId/${id}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  })
+
+  if (!response.ok) {
+    throw new Error('Error al obtener encuesta')
+  }
+  return response.json()
+}
+
+
